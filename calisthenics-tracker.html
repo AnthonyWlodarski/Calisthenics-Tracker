@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Calisthenics">
+  <meta name="theme-color" content="#0f0f0f">
+  <title>Calisthenics Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+:root {
+  --bg: #0f0f0f;
+  --card: #1a1a1a;
+  --card-border: #2a2a2a;
+  --text: #e8e8e8;
+  --text-muted: #a0a0a0;
+  --accent: #00c9b1;
+  --accent-dark: #009e8a;
+  --danger: #e74c3c;
+  --success: #2ecc71;
+  --input-bg: #222;
+  --radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  padding: 16px;
+  padding-bottom: 80px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+header {
+  margin-bottom: 20px;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--accent);
+}
+
+nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav-btn {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-btn.active {
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  border-left: 4px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.card h2, .card h3 {
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.btn {
+  background: var(--accent);
+  color: #000;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.btn:active {
+  background: var(--accent-dark);
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  background: var(--input-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 1rem;
+  margin-top: 6px;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+label {
+  display: block;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.exercise-row {
+  background: #222;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--accent);
+}
+
+.exercise-row .inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-box {
+  background: #222;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-box .value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+canvas {
+  width: 100%;
+  height: 220px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.session-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.session-item:last-child {
+  border-bottom: none;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 400px) {
+  .exercise-row .inputs {
+    grid-template-columns: 1fr;
+  }
+}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Calisthenics Tracker</h1>
+    <nav>
+      <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+      <button class="nav-btn" data-view="log">Log</button>
+      <button class="nav-btn" data-view="history">History</button>
+      <button class="nav-btn" data-view="progress">Progress</button>
+      <button class="nav-btn" data-view="settings">Settings</button>
+    </nav>
+  </header>
+  <main id="app"></main>
+  <script>
+// Calisthenics Tracker - App Logic
+// Dark Minimal + Teal | LocalStorage | 5-day cycle
+
+const STORAGE_KEY = "calisthenics_tracker_v1";
+
+const TEMPLATE = {
+  1: {
+    name: "Upper Body",
+    type: "workout",
+    exercises: [
+      { name: "Arm circles", sets: 3, reps: 12, unit: "reps" },
+      { name: "Supermans", sets: 3, reps: 9, unit: "reps", range: "8–10" },
+      { name: "Push-ups", sets: 4, reps: 10, unit: "reps", range: "3–5 sets" },
+      { name: "Tricep dips", sets: 4, reps: 10, unit: "reps", range: "3–5 sets" },
+      { name: "Pull-ups", sets: 3, reps: 10, unit: "reps" },
+      { name: "Russian twists", sets: 3, reps: 10, unit: "reps", range: "8–12" }
+    ]
+  },
+  2: {
+    name: "Legs",
+    type: "workout",
+    exercises: [
+      { name: "Hip rotations", sets: 3, reps: 10, unit: "reps/side" },
+      { name: "Squats", sets: 3, reps: 11, unit: "reps", range: "10–12" },
+      { name: "Lunges", sets: 3, reps: 9, unit: "reps/side", range: "8–10" },
+      { name: "Glute bridges", sets: 3, reps: 9, unit: "reps (hold)", range: "8–10" },
+      { name: "Calf raises", sets: 3, reps: 11, unit: "reps", range: "10–12" },
+      { name: "Jump squats", sets: 3, reps: 11, unit: "reps", range: "10–12" }
+    ]
+  },
+  3: { name: "Rest", type: "rest" },
+  4: {
+    name: "Full-body",
+    type: "workout",
+    exercises: [
+      { name: "Jumping jacks", sets: 3, reps: 15, unit: "reps" },
+      { name: "Wall sits", sets: 3, reps: 11, unit: "reps", range: "10–12" },
+      { name: "Burpees", sets: 2, reps: 9, unit: "reps", range: "8–10" },
+      { name: "Jump squats", sets: 2, reps: 9, unit: "reps", range: "8–10" },
+      { name: "Push-ups", sets: 3, reps: 10, unit: "reps" },
+      { name: "Planks", sets: 3, reps: 40, unit: "seconds", range: "30–50 sec" }
+    ]
+  },
+  5: { name: "Active Recovery", type: "recovery" }
+};
+
+let state = loadState();
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return {
+    currentDay: 1,
+    completedCycles: 0,
+    sessions: []
+  };
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function $(sel) { return document.querySelector(sel); }
+function $$(sel) { return document.querySelectorAll(sel); }
+
+// Navigation
+document.addEventListener("click", (e) => {
+  if (e.target.classList.contains("nav-btn")) {
+    $$(".nav-btn").forEach(b => b.classList.remove("active"));
+    e.target.classList.add("active");
+    renderView(e.target.dataset.view);
+  }
+});
+
+function renderView(view) {
+  const app = $("#app");
+  switch (view) {
+    case "dashboard": renderDashboard(app); break;
+    case "log": renderLog(app); break;
+    case "history": renderHistory(app); break;
+    case "progress": renderProgress(app); break;
+    case "settings": renderSettings(app); break;
+    default: renderDashboard(app);
+  }
+}
+
+// Initial render
+renderView("dashboard");
+
+function renderDashboard(container) {
+  const day = TEMPLATE[state.currentDay];
+  const last = state.sessions[state.sessions.length - 1];
+  container.innerHTML = `
+    <div class="card">
+      <h2>Current Cycle</h2>
+      <div class="stat-grid" style="margin-top:12px;">
+        <div class="stat-box">
+          <div class="value">${state.completedCycles}</div>
+          <div class="muted">Completed Cycles</div>
+        </div>
+        <div class="stat-box">
+          <div class="value">Day ${state.currentDay}</div>
+          <div class="muted">${day.name}</div>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:12px;">Minimum 2 rounds recommended. Add more as you feel ready.</p>
+    </div>
+
+    <div class="card">
+      <h3>Today's Focus</h3>
+      <p style="margin:8px 0;"><strong>${day.name}</strong></p>
+      ${day.type === "workout" 
+        ? `<p class="muted">${day.exercises.length} exercises</p>`
+        : `<p class="muted">Mark complete with optional note</p>`}
+      <button class="btn" id="start-log">Log Day ${state.currentDay}</button>
+    </div>
+
+    ${last ? `
+    <div class="card">
+      <h3>Last Session</h3>
+      <p>${formatDate(last.date)} — Day ${last.day}: ${TEMPLATE[last.day].name}</p>
+      <p class="muted">${last.rounds ? last.rounds + " rounds" : ""} ${last.note || ""}</p>
+    </div>` : ""}
+  `;
+
+  $("#start-log")?.addEventListener("click", () => {
+    $$(".nav-btn").forEach(b => b.classList.remove("active"));
+    $('[data-view="log"]').classList.add("active");
+    renderLog(container);
+  });
+}
+
+function renderLog(container) {
+  const day = TEMPLATE[state.currentDay];
+  const isWorkout = day.type === "workout";
+
+  if (!isWorkout) {
+    container.innerHTML = `
+      <div class="card">
+        <h2>Day ${state.currentDay}: ${day.name}</h2>
+        <p class="muted">Mark this day complete. Optional note below.</p>
+        <label>Note (optional)</label>
+        <textarea id="rest-note" rows="3" placeholder="How did you feel? What did you do?"></textarea>
+        <button class="btn" id="save-rest">Mark Complete</button>
+      </div>
+    `;
+    $("#save-rest").addEventListener("click", () => {
+      const note = $("#rest-note").value.trim();
+      state.sessions.push({
+        id: Date.now(),
+        date: new Date().toISOString(),
+        day: state.currentDay,
+        type: day.type,
+        note
+      });
+      advanceDay();
+      saveState();
+      alert("Saved!");
+      renderView("dashboard");
+      $$(".nav-btn").forEach(b => b.classList.remove("active"));
+      $('[data-view="dashboard"]').classList.add("active");
+    });
+    return;
+  }
+
+  // Workout day
+  let html = `
+    <div class="card">
+      <h2>Day ${state.currentDay}: ${day.name}</h2>
+      <label>Rounds completed (min 2)</label>
+      <input type="number" id="rounds" min="2" value="2" />
+    </div>
+  `;
+
+  day.exercises.forEach((ex, i) => {
+    const rangeHint = ex.range ? ` <span class="muted">(${ex.range})</span>` : "";
+    html += `
+      <div class="exercise-row" data-index="${i}">
+        <strong>${ex.name}</strong>${rangeHint}
+        <div class="inputs">
+          <div>
+            <label>Sets</label>
+            <input type="number" class="sets" min="1" value="${ex.sets}" />
+          </div>
+          <div>
+            <label>${ex.unit === "seconds" ? "Seconds" : "Reps"}</label>
+            <input type="number" class="reps" min="1" value="${ex.reps}" />
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `<button class="btn" id="save-workout">Save Workout</button>`;
+  container.innerHTML = html;
+
+  $("#save-workout").addEventListener("click", () => {
+    const rounds = Math.max(2, parseInt($("#rounds").value) || 2);
+    const exercises = [];
+    $$(".exercise-row").forEach(row => {
+      const idx = parseInt(row.dataset.index);
+      const ex = day.exercises[idx];
+      exercises.push({
+        name: ex.name,
+        sets: parseInt(row.querySelector(".sets").value) || ex.sets,
+        reps: parseInt(row.querySelector(".reps").value) || ex.reps,
+        unit: ex.unit
+      });
+    });
+
+    state.sessions.push({
+      id: Date.now(),
+      date: new Date().toISOString(),
+      day: state.currentDay,
+      type: "workout",
+      rounds,
+      exercises
+    });
+    advanceDay();
+    saveState();
+    alert("Workout saved!");
+    renderView("dashboard");
+    $$(".nav-btn").forEach(b => b.classList.remove("active"));
+    $('[data-view="dashboard"]').classList.add("active");
+  });
+}
+
+function advanceDay() {
+  if (state.currentDay === 5) {
+    state.completedCycles++;
+  }
+  state.currentDay = (state.currentDay % 5) + 1;
+}
+
+function renderHistory(container) {
+  if (state.sessions.length === 0) {
+    container.innerHTML = `<div class="empty">No sessions logged yet.</div>`;
+    return;
+  }
+  const reversed = [...state.sessions].reverse();
+  container.innerHTML = `
+    <div class="card">
+      <h2>History</h2>
+      ${reversed.map(s => `
+        <div class="session-item">
+          <strong>${formatDate(s.date)}</strong> — Day ${s.day}: ${TEMPLATE[s.day].name}
+          <div class="muted">
+            ${s.rounds ? s.rounds + " rounds · " : ""}
+            ${s.exercises ? s.exercises.length + " exercises" : s.note || "Completed"}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderProgress(container) {
+  const exerciseNames = new Set();
+  state.sessions.forEach(s => {
+    if (s.exercises) s.exercises.forEach(e => exerciseNames.add(e.name));
+  });
+  const names = [...exerciseNames].sort();
+
+  if (names.length === 0) {
+    container.innerHTML = `<div class="empty">Log some workouts to see progress charts.</div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="card">
+      <h2>Progress</h2>
+      <label>Select exercise</label>
+      <select id="exercise-select">
+        ${names.map(n => `<option value="${n}">${n}</option>`).join("")}
+      </select>
+      <canvas id="chart"></canvas>
+      <div id="chart-stats" class="muted" style="margin-top:8px;"></div>
+    </div>
+  `;
+
+  const select = $("#exercise-select");
+  const canvas = $("#chart");
+  const stats = $("#chart-stats");
+
+  function draw() {
+    const name = select.value;
+    const points = [];
+    state.sessions.forEach(s => {
+      if (!s.exercises) return;
+      const ex = s.exercises.find(e => e.name === name);
+      if (ex) {
+        const total = ex.sets * ex.reps;
+        points.push({ date: new Date(s.date), value: total, sets: ex.sets, reps: ex.reps });
+      }
+    });
+
+    if (points.length === 0) {
+      stats.textContent = "No data yet.";
+      return;
+    }
+
+    drawLineChart(canvas, points);
+    const avg = Math.round(points.reduce((a, p) => a + p.value, 0) / points.length);
+    const max = Math.max(...points.map(p => p.value));
+    stats.textContent = `${points.length} sessions · Avg total: ${avg} · Best: ${max}`;
+  }
+
+  select.addEventListener("change", draw);
+  draw();
+}
+
+function drawLineChart(canvas, points) {
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+
+  const w = rect.width;
+  const h = rect.height;
+  ctx.clearRect(0, 0, w, h);
+
+  if (points.length < 2) {
+    ctx.fillStyle = "#a0a0a0";
+    ctx.font = "14px sans-serif";
+    ctx.fillText("Need at least 2 data points", 20, h / 2);
+    return;
+  }
+
+  const values = points.map(p => p.value);
+  const min = Math.min(...values) * 0.9;
+  const max = Math.max(...values) * 1.1;
+  const pad = 30;
+
+  // Grid
+  ctx.strokeStyle = "#2a2a2a";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = pad + (h - pad * 2) * (i / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad, y);
+    ctx.lineTo(w - 10, y);
+    ctx.stroke();
+  }
+
+  // Line
+  ctx.strokeStyle = "#00c9b1";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  points.forEach((p, i) => {
+    const x = pad + (w - pad - 20) * (i / (points.length - 1));
+    const y = h - pad - ((p.value - min) / (max - min)) * (h - pad * 2);
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Points
+  ctx.fillStyle = "#00c9b1";
+  points.forEach((p, i) => {
+    const x = pad + (w - pad - 20) * (i / (points.length - 1));
+    const y = h - pad - ((p.value - min) / (max - min)) * (h - pad * 2);
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+
+function renderSettings(container) {
+  container.innerHTML = `
+    <div class="card">
+      <h2>Settings</h2>
+      <p class="muted">Data is stored only on this device.</p>
+      
+      <label>Current Day</label>
+      <select id="set-day">
+        ${[1,2,3,4,5].map(d => `<option value="${d}" ${d === state.currentDay ? "selected" : ""}>Day ${d}: ${TEMPLATE[d].name}</option>`).join("")}
+      </select>
+
+      <label>Completed Cycles</label>
+      <input type="number" id="set-cycles" min="0" value="${state.completedCycles}" />
+
+      <button class="btn" id="save-settings">Save Settings</button>
+    </div>
+
+    <div class="card">
+      <h3>Backup</h3>
+      <button class="btn btn-secondary" id="export-btn">Export Data (JSON)</button>
+      <label style="margin-top:16px;">Import Data</label>
+      <input type="file" id="import-file" accept=".json" />
+      <button class="btn" id="import-btn" style="margin-top:8px;">Import</button>
+    </div>
+
+    <div class="card">
+      <h3>Danger Zone</h3>
+      <button class="btn btn-danger" id="clear-btn">Clear All Data</button>
+    </div>
+  `;
+
+  $("#save-settings").addEventListener("click", () => {
+    state.currentDay = parseInt($("#set-day").value);
+    state.completedCycles = parseInt($("#set-cycles").value) || 0;
+    saveState();
+    alert("Settings saved");
+  });
+
+  $("#export-btn").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `calisthenics-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+  });
+
+  $("#import-btn").addEventListener("click", () => {
+    const file = $("#import-file").files[0];
+    if (!file) return alert("Select a file first");
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if (data.sessions && typeof data.currentDay === "number") {
+          state = data;
+          saveState();
+          alert("Imported successfully");
+          location.reload();
+        } else alert("Invalid file");
+      } catch (e) { alert("Failed to parse file"); }
+    };
+    reader.readAsText(file);
+  });
+
+  $("#clear-btn").addEventListener("click", () => {
+    if (confirm("Delete ALL workout history? This cannot be undone.")) {
+      localStorage.removeItem(STORAGE_KEY);
+      state = loadState();
+      alert("Data cleared");
+      location.reload();
+    }
+  });
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+}
+  
+  if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  }
+</script>
+</body>
+</html>
